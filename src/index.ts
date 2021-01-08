@@ -64,20 +64,14 @@ export function query<T>(...params: Parameters<mysql.QueryFunction>): Promise<T>
       return
     }
 
-    const callback = (error: Error, results: any) => {
-      if (error) {
-        reject(error)
-      } else {
-        resolve(results)
-      }
-    }
-    let originalCallback: (...p: any[]) => any = () => { }
+    const callback = (error: Error, results: any) => error ? reject(error) : resolve(results)
+
     if (typeof params[params.length - 1] === 'function') {
-      originalCallback = params[params.length - 1]
-      params[params.length - 1] = (error: Error, results: any) => {
+      const originalCallback = params.pop()
+      params.push((error: Error, results: any) => {
         originalCallback(error, results)
         callback(error, results)
-      }
+      })
     } else {
       params.push(callback)
     }
@@ -88,16 +82,16 @@ export function query<T>(...params: Parameters<mysql.QueryFunction>): Promise<T>
 
 export async function find<T>(
   table: string,
-  conditions: Record<string, any>
+  conditions: Record<keyof T, any>
 ): Promise<T> {
   const wheres = Object.keys(conditions).map((k) => `${k}=:${k}`)
   const sql = `select * from ${table} where ${wheres.join(' and ')}`
   return query<T>(sql, conditions)
 }
 
-export async function findOne<T>(
+export async function findOne<T extends Record<string, any>>(
   table: string,
-  conditions: Record<string, any>
+  conditions: Record<keyof T, any>
 ): Promise<T> {
   const wheres = Object.keys(conditions).map((k) => `${k}=:${k}`)
   const sql = `select * from ${table} where ${wheres.join(' and ')}`
@@ -105,8 +99,8 @@ export async function findOne<T>(
   if (result?.length) return result[0]
 }
 
-export async function findOneById<T>(table: string, id: number | string): Promise<T> {
-  return findOne(table, { id })
+export async function findOneById<T extends { id: number | string }>(table: string, id: number | string): Promise<T> {
+  return findOne<T>(table, { id } as any)
 }
 
 export async function findOneByQuery<T>(...args: Parameters<typeof query>): Promise<T> {
@@ -132,7 +126,7 @@ export async function insert(
   return query(sql, values)
 }
 
-export async function insertAndFind<T>(
+export async function insertAndFind<T extends { id: number | string }>(
   table: string,
   values: Record<string, any>
 ): Promise<T> {
@@ -161,7 +155,7 @@ export async function update<T extends Record<string, any>>(
   return query(sql, values)
 }
 
-export async function updateAndFind<T extends Record<string, any>>(
+export async function updateAndFind<T extends Record<string, any> & { id: number | string }>(
   table: string,
   values: T,
   updateKeys: (keyof T)[] = [],
