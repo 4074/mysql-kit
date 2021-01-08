@@ -1,6 +1,6 @@
 # Mysql-Kit
 
-Mysql toolkit for node.js
+Mysql toolkit base on `mysql`.
 
 - Promisify `query` method of `mysql`
 - Some common shorthand methodes
