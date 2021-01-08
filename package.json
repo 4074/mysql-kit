@@ -1,0 +1,21 @@
+{
+  "name": "mysql-kit",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "https://github.com/4074/mysql-kit.git",
+  "author": "4074 <win.ten.in@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "mysql": "^2.18.1"
+  },
+  "devDependencies": {
+    "@types/mysql": "^2.15.17",
+    "@typescript-eslint/eslint-plugin": "^4.12.0",
+    "@typescript-eslint/parser": "^4.12.0",
+    "eslint": "^7.17.0",
+    "eslint-config-alloy": "^3.10.0",
+    "prettier": "^2.2.1",
+    "ts-node": "^9.1.1",
+    "typescript": "^4.1.3"
+  }
+}
