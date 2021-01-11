@@ -72,7 +72,7 @@ function setup(pool: mysql.Pool) {
 // https://www.typescriptlang.org/docs/handbook/type-compatibility.html#optional-parameters-and-rest-parameters
 // When a function has overloads, each overload in the source type must be matched by a compatible signature on the target type.
 // This ensures that the target function can be called in all the same situations as the source function.
-export function query<T>(...params: [string | mysql.Query | mysql.QueryOptions, any?] | Parameters<typeof pool.query>): Promise<T> {
+export function query<T = any>(...params: [string | mysql.Query | mysql.QueryOptions, any?] | Parameters<typeof pool.query>): Promise<T> {
   return new Promise((resolve, reject) => {
     if (!pool) {
       reject(Error('No connection!'))
