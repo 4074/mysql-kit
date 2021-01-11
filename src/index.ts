@@ -97,7 +97,7 @@ export function query<T = any>(...params: [string | mysql.Query | mysql.QueryOpt
 
 export async function find<T>(
   table: string,
-  conditions: Record<keyof T, any>
+  conditions: Partial<T>
 ): Promise<T> {
   const wheres = Object.keys(conditions).map((k) => `${k}=:${k}`)
   const sql = `select * from ${table} where ${wheres.join(' and ')}`
@@ -106,7 +106,7 @@ export async function find<T>(
 
 export async function findOne<T extends Record<string, any>>(
   table: string,
-  conditions: Record<keyof T, any>
+  conditions: Partial<T>
 ): Promise<T> {
   const wheres = Object.keys(conditions).map((k) => `${k}=:${k}`)
   const sql = `select * from ${table} where ${wheres.join(' and ')}`
