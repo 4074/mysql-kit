@@ -110,13 +110,11 @@ export async function findOneById<T extends { id: number | string }>(table: stri
 }
 
 export async function findOneByQuery<T>(...args: Parameters<typeof query>): Promise<T> {
-  const result = await query<T[]>(...args)
-  if (result?.length) return result[0]
+  return (await query<T[]>(...args))?.[0]
 }
 
 export async function has(...args: Parameters<typeof findOne>): Promise<boolean> {
-  const result = await findOne<any>(...args)
-  return result?.length > 0
+  return (await findOne<any>(...args))?.length > 0
 }
 
 export async function insert(
@@ -128,8 +126,7 @@ export async function insert(
   const vs = values.map((item) => {
     return `(${keys.map((k) => pool.escape(item[k])).join(', ')})`
   })
-  const sql = `insert into ${table} (${keys.join(', ')}) values ${vs.join(',')}`
-  return query(sql, values)
+  return query(`insert into ${table} (${keys.join(', ')}) values ${vs.join(',')}`, values)
 }
 
 export async function insertAndFind<T extends { id: number | string }>(
@@ -142,9 +139,7 @@ export async function insertAndFind<T extends { id: number | string }>(
   }
   const sql = `insert into ${table} (${keys.join(', ')}) values (${keys.map((k) => `:${k}`).join(', ')})`
   const result = await query<any>(sql, values)
-  if (result?.insertId) {
-    return findOneById(table, result.insertId)
-  }
+  if (result?.insertId) return findOneById(table, result.insertId)
 }
 
 export async function update<T extends Record<string, any>>(
@@ -157,8 +152,7 @@ export async function update<T extends Record<string, any>>(
     ? updateKeys
     : Object.keys(values).filter((key) => key !== updateBy)
   const vs = keys.map((key) => `${key} = :${key}`)
-  const sql = `update ${table} set ${vs.join(', ')} where ${updateBy} = :${updateBy}`
-  return query(sql, values)
+  return query(`update ${table} set ${vs.join(', ')} where ${updateBy} = :${updateBy}`, values)
 }
 
 export async function updateAndFind<T extends Record<string, any> & { id: number | string }>(
