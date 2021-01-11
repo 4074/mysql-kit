@@ -41,13 +41,7 @@ function setup(pool: mysql.Pool) {
         real = real.replace(/:(\w+)/g, (
           txt: string,
           key: string
-        ): string => {
-          if (values.hasOwnProperty(key)) {
-            const escaped = connection.escape(values[key])
-            return Array.isArray(values[key]) ? `(${escaped})` : escaped
-          }
-          return txt
-        })
+        ): string => values.hasOwnProperty(key) ? connection.escape(values[key]) : txt)
       }
 
       const eventData: QueryEventData = {
