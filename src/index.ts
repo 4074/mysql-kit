@@ -1,7 +1,7 @@
 /* eslint-disable max-params */
 import mysql from 'mysql'
 
-interface QueryEventData {
+export interface QueryEventData {
   host: string
   database: string
   sql: string
@@ -66,7 +66,13 @@ function setup(pool: mysql.Pool) {
   })
 }
 
-export function query<T>(...params: Parameters<mysql.QueryFunction>): Promise<T> {
+// Can not just set ...params: Parameters<typeof pool.query>.
+// Because `pool.query` is a overloading function.
+// https://github.com/microsoft/TypeScript/issues/26591
+// https://www.typescriptlang.org/docs/handbook/type-compatibility.html#optional-parameters-and-rest-parameters
+// When a function has overloads, each overload in the source type must be matched by a compatible signature on the target type.
+// This ensures that the target function can be called in all the same situations as the source function.
+export function query<T>(...params: [string | mysql.Query | mysql.QueryOptions, any?] | Parameters<typeof pool.query>): Promise<T> {
   return new Promise((resolve, reject) => {
     if (!pool) {
       reject(Error('No connection!'))
@@ -85,7 +91,7 @@ export function query<T>(...params: Parameters<mysql.QueryFunction>): Promise<T>
       params.push(callback)
     }
 
-    pool.query(...params)
+    pool.query(...(params as Parameters<typeof pool.query>))
   })
 }
 
