@@ -10,9 +10,18 @@ interface QueryEventData {
 
 export let pool: mysql.Pool
 
-export default (...params: Parameters<typeof mysql.createPool>) => {
-  pool = mysql.createPool(...params)
-  setup(pool)
+export default (...params: Parameters<typeof mysql.createPool>): Promise<mysql.Pool> => {
+  return new Promise((resolve, reject) => {
+    try {
+      pool = mysql.createPool(...params)
+      pool.once('connection', () => {
+        resolve(pool)
+      })
+      setup(pool)
+    } catch (error) {
+      reject(error)
+    }
+  })
 }
 
 function setup(pool: mysql.Pool) {

@@ -1,6 +1,6 @@
-# Mysql-Kit
+# MySQL-Kit
 
-Mysql toolkit base on `mysql`.
+MySQL toolkit base on `mysql` package.
 
 - Promisify `query` method of `mysql`
 - Some common shorthand methodes
@@ -33,7 +33,9 @@ Use
 ```typescript
 import connect, { query } from 'mysql-kit'
 
-await connect()
+// Your mysql config
+const config = {}
+await connect(config)
 
-quert('show tables')
+query('show tables')
 ```
