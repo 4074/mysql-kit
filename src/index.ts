@@ -114,7 +114,7 @@ export async function findOneByQuery<T>(...args: Parameters<typeof query>): Prom
 }
 
 export async function has(...args: Parameters<typeof findOne>): Promise<boolean> {
-  return (await findOne<any>(...args))?.length > 0
+  return !!(await findOne<any>(...args))
 }
 
 export async function insert(
