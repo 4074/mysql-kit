@@ -4,6 +4,7 @@
   "description": "Mysql toolkit base on `mysql`",
   "main": "dist/index.js",
   "files": [
+    "src/**/*",
     "dist/**/*"
   ],
   "repository": "https://github.com/4074/mysql-kit.git",
