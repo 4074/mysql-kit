@@ -93,7 +93,7 @@ export async function find<T>(
   table: string,
   conditions?: Partial<T>
 ): Promise<T[]> {
-  const wheres = Object.keys(conditions).map((k) => `${k}=:${k}`)
+  const wheres = Object.keys(conditions).map((k) => `\`${k}\`=:${k}`)
   const sql = `select * from ${table} where ${wheres.join(' and ')}`
   return query<T[]>(sql, conditions)
 }
@@ -126,7 +126,7 @@ export async function insert(
   const vs = values.map((item) => {
     return `(${keys.map((k) => pool.escape(item[k])).join(', ')})`
   })
-  return query(`insert into ${table} (${keys.join(', ')}) values ${vs.join(',')}`, values)
+  return query(`insert into ${table} (${keys.map(k => `\`${k}\``).join(', ')}) values ${vs.join(',')}`, values)
 }
 
 export async function insertAndFind<T extends { id: number | string }>(
@@ -137,7 +137,7 @@ export async function insertAndFind<T extends { id: number | string }>(
   if (values.id && values.id < 0) {
     keys = keys.filter((k) => k !== 'id')
   }
-  const sql = `insert into ${table} (${keys.join(', ')}) values (${keys.map((k) => `:${k}`).join(', ')})`
+  const sql = `insert into ${table} (${keys.map(k => `\`${k}\``).join(', ')}) values (${keys.map((k) => `:${k}`).join(', ')})`
   const result = await query<any>(sql, values)
   if (result?.insertId) return findOneById(table, result.insertId)
 }
@@ -151,7 +151,7 @@ export async function update<T extends Record<string, any>>(
   const keys = updateKeys.length
     ? updateKeys
     : Object.keys(values).filter((key) => key !== updateBy)
-  const vs = keys.map((key) => `${key} = :${key}`)
+  const vs = keys.map((key) => `\`${key}\` = :${key}`)
   return query(`update ${table} set ${vs.join(', ')} where ${updateBy} = :${updateBy}`, values)
 }
 
