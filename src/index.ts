@@ -93,7 +93,9 @@ export async function find<T>(
   table: string,
   conditions?: Partial<T>
 ): Promise<T[]> {
-  const wheres = Object.keys(conditions).map((k) => `\`${k}\`=:${k}`)
+  const wheres = Object.keys(conditions).map(
+    (k) => Array.isArray(conditions[k]) ? `\`${k}\` in (:${k})` : `\`${k}\`=:${k}`
+  )
   const sql = `select * from ${table} where ${wheres.join(' and ')}`
   return query<T[]>(sql, conditions)
 }
