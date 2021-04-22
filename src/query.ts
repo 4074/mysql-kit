@@ -60,10 +60,10 @@ export async function has(...args: Parameters<typeof findOne>): Promise<boolean>
   return !!(await findOne<any>(...args))
 }
 
-export async function insert(
+export async function insert<T extends Record<string, any>>(
   table: string,
-  source: Record<string, any> | Record<string, any>[]
-): Promise<void> {
+  source: T | T[]
+): Promise<mysql.OkPacket> {
   const values = Array.isArray(source) ? source : [source]
   const keys = Object.keys(values[0])
   const vs = values.map((item) => {
