@@ -1,5 +1,5 @@
 import mysql from 'mysql'
-import { pool } from './connect'
+import { getPool } from './connect'
 import { createConditionStr } from './tools'
 
 // Can not just set ...params: Parameters<typeof pool.query>.
@@ -8,15 +8,27 @@ import { createConditionStr } from './tools'
 // https://www.typescriptlang.org/docs/handbook/type-compatibility.html#optional-parameters-and-rest-parameters
 // When a function has overloads, each overload in the source type must be matched by a compatible signature on the target type.
 // This ensures that the target function can be called in all the same situations as the source function.
-export function query<T = any>(...params: [string | mysql.Query | mysql.QueryOptions, any?] | Parameters<typeof pool.query>): Promise<T> {
+export function query<T = any>(...params: [string | mysql.Query | mysql.QueryOptions, any?] | Parameters<mysql.Pool['query']>): Promise<T> {
   return new Promise((resolve, reject) => {
-    if (!pool) reject(Error('No connection!'))
+    const pool = getPool()
+    if (!pool) {
+      reject(Error('No connection!'))
+      return
+    }
 
-    pool.query(...(params as Parameters<typeof pool.query>)).on('result', (rows) => {
-      resolve(rows)
-    }).on('error', (error) => {
-      reject(error)
-    })
+    const callback = (error: Error, results: any) => error ? reject(error) : resolve(results)
+
+    if (typeof params[params.length - 1] === 'function') {
+      const originalCallback = params.pop()
+      params.push((error: Error, results: any) => {
+        originalCallback(error, results)
+        callback(error, results)
+      })
+    } else {
+      params.push(callback)
+    }
+
+    pool.query(...(params as Parameters<typeof pool.query>))
   })
 }
 
@@ -55,7 +67,7 @@ export async function insert(
   const values = Array.isArray(source) ? source : [source]
   const keys = Object.keys(values[0])
   const vs = values.map((item) => {
-    return `(${keys.map((k) => pool.escape(item[k])).join(', ')})`
+    return `(${keys.map((k) => mysql.escape(item[k])).join(', ')})`
   })
   return query(`insert into ${table} (${keys.map(k => `\`${k}\``).join(', ')}) values ${vs.join(',')}`, values)
 }

@@ -8,20 +8,14 @@ export interface QueryEventData {
   date: Date
 }
 
-export let pool: mysql.Pool
+let pool: mysql.Pool
 
-export default async function connect(...params: Parameters<typeof mysql.createPool>): Promise<mysql.Pool> {
-  return new Promise((resolve, reject) => {
-    try {
-      pool = mysql.createPool(...params)
-      pool.once('connection', () => {
-        resolve(pool)
-      })
-      setup(pool)
-    } catch (error) {
-      reject(error)
-    }
-  })
+export const getPool = (): mysql.Pool | undefined => pool
+
+export default function connect(...params: Parameters<typeof mysql.createPool>): mysql.Pool {
+  pool = mysql.createPool(...params)
+  setup(pool)
+  return pool
 }
 
 function setup(pool: mysql.Pool) {

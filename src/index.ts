@@ -1,4 +1,4 @@
-import connect from './connect'
+import connect, { getPool } from './connect'
 import {
   query,
   find,
@@ -17,6 +17,7 @@ export type { QueryEventData } from './connect'
 
 export default {
   connect,
+  getPool,
 
   query,
   find,

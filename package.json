@@ -30,6 +30,7 @@
   },
   "scripts": {
     "test": "jest",
-    "build": "tsc"
+    "build": "tsc",
+    "demo": "ts-node src/demo.ts"
   }
 }
