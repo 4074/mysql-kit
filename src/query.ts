@@ -41,18 +41,18 @@ export async function find<T = any>(
   return query<T[]>(sql, conditions)
 }
 
-export async function findOne<T extends Record<string, any> = Record<string, any>>(
+export async function findOne<T extends Record<string, any>>(
   table: string,
   conditions?: Partial<T>
 ): Promise<T> {
   return (await find(table, conditions))[0]
 }
 
-export async function findOneById<T extends { id: number | string }>(table: string, id: number | string): Promise<T> {
+export async function findOneById<T extends { id?: number | string }>(table: string, id: number | string): Promise<T> {
   return findOne<T>(table, { id } as any)
 }
 
-export async function findOneByQuery<T = any>(...args: Parameters<typeof query>): Promise<T> {
+export async function findOneByQuery<T extends Record<string, any>>(...args: Parameters<typeof query>): Promise<T> {
   return (await query<T[]>(...args))?.[0]
 }
 
@@ -72,9 +72,9 @@ export async function insert<T extends Record<string, any>>(
   return query(`insert into ${table} (${keys.map(k => `\`${k}\``).join(', ')}) values ${vs.join(',')}`, values)
 }
 
-export async function insertAndFind<T extends { id: number | string }>(
+export async function insertAndFind<T extends { id?: number | string }>(
   table: string,
-  values: Record<string, any>
+  values: Partial<T>
 ): Promise<T> {
   let keys = Object.keys(values)
   if (values.id && values.id < 0) {
@@ -85,21 +85,24 @@ export async function insertAndFind<T extends { id: number | string }>(
   if (result?.insertId) return findOneById(table, result.insertId)
 }
 
-export async function update<T extends Record<string, any> = Record<string, any>>(
+export async function update<T extends Record<string, any>>(
   table: string,
   updates: Partial<T>,
-  conditions?: Partial<T>
-): Promise<void> {
+  conditions: Partial<T>
+): Promise<mysql.OkPacket> {
   const where = createConditionStr(conditions)
+  if (!where) {
+    throw Error('Update with empty conditions is a danger operation. Please check your code, and make this operation using `query` method.')
+  }
   const keys = Object.keys(updates)
   const values = keys.map((key) => `\`${key}\` = :${key}`)
   return query(`update ${table} set ${values.join(', ')} ${where}`, { ...updates, ...conditions })
 }
 
-export async function updateAndFind<T extends Record<string, any> = Record<string, any>>(
+export async function updateAndFind<T extends Record<string, any>>(
   table: string,
   updates: Partial<T>,
-  conditions?: Partial<T>
+  conditions: Partial<T>
 ): Promise<T> {
   await update(table, updates, conditions)
   return findOne(table, conditions)

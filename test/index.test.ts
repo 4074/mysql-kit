@@ -1,4 +1,5 @@
 import mk from '../src'
+import { pickValues } from '../src/tools'
 
 interface Animal {
   id?: number
@@ -9,6 +10,12 @@ interface Animal {
 }
 
 const testTableName = 'animals'
+const isValuesEqual = <T>(a: T, b: T, keys: (keyof T)[]) => {
+  for (const key of keys) {
+    if (a[key] !== b[key]) return false
+  }
+  return true
+}
 
 const config = {
   host: 'localhost',
@@ -46,7 +53,7 @@ describe('mysql kit', () => {
     ).toBe(true)
   })
 
-  test('Insert', async () => {
+  test('insert', async () => {
     const r = await mk.insert<Animal>(testTableName, [{
       type: 'cat',
       name: 'Tom',
@@ -62,8 +69,85 @@ describe('mysql kit', () => {
     expect(r.affectedRows).toBe(2)
   })
 
-  test('1', () => {
-    expect(1).toBe(1)
+  test('insertAndFind', async () => {
+    const source: Animal = {
+      type: 'dog',
+      name: Math.random().toString().slice(-8),
+      age: 2,
+      status: 1
+    }
+    const r = await mk.insertAndFind(testTableName, source)
+
+    expect(isValuesEqual(source, r, ['type', 'name', 'age', 'status'])).toBe(true)
+  })
+
+  test('find', async () => {
+    const r = await mk.find<Animal>(testTableName, { type: 'dog' })
+    expect(r.length).toBe(1)
+    expect(r[0].type).toBe('dog')
+  })
+
+  test('findOne', async () => {
+    const r = await mk.findOne(testTableName, { type: 'dog' })
+    expect(r.type).toBe('dog')
+  })
+
+  test('findOneById', async () => {
+    const r = await mk.findOneById<Animal>(testTableName, 1)
+    expect(r.id).toBe(1)
+  })
+
+  test('findOneByQuery', async () => {
+    const r = await mk.findOneByQuery(
+      `select * from ${testTableName} where type=:type`,
+      { type: 'cat' }
+    )
+    expect(r.id).toBe(1)
+  })
+
+  test('has', async () => {
+    const r = await mk.has(testTableName, { type: 'horse' })
+    expect(r).toBe(false)
+  })
+
+  test('update', async () => {
+    const r = await mk.update<Animal>(testTableName, { age: 99 }, { type: 'cat' })
+    expect(r.affectedRows).toBe(2)
+  })
+
+  test('update with empty conditions', async () => {
+    expect.assertions(1)
+    try {
+      await mk.update<Animal>(testTableName, { age: 98 }, {})
+    } catch (error) {
+      expect(error).toBeInstanceOf(Error)
+    }
+  })
+
+  test('updateAndFind', async () => {
+    const r = await mk.updateAndFind<Animal>(testTableName, { age: 90 }, { id: 1 })
+    expect(r.age).toBe(90)
+  })
+
+  test('updateAndFind with empty conditions', async () => {
+    expect.assertions(1)
+    try {
+      await mk.updateAndFind<Animal>(testTableName, { age: 98 }, {})
+    } catch (error) {
+      expect(error).toBeInstanceOf(Error)
+    }
+  })
+
+  test('pickValues', () => {
+    const source: Animal = {
+      type: 'cat',
+      name: 'Tom',
+      age: 2,
+      status: 1
+    }
+    const picked = pickValues(source, ['type', 'age'])
+    expect(Object.keys(picked).length).toBe(2)
+    expect(isValuesEqual(source, picked, ['type', 'age'])).toBe(true)
   })
 })
 
