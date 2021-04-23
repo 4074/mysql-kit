@@ -34,10 +34,14 @@ export function query<T = any>(...params: [string | mysql.Query | mysql.QueryOpt
 
 export async function find<T = any>(
   table: string,
-  conditions: Partial<T> = {}
+  conditions: Partial<T> = {},
+  options?: { limit?: number | string }
 ): Promise<T[]> {
   const where = createConditionStr(conditions)
-  const sql = `select * from ${table} ${where}`
+  let sql = `select * from ${table} ${where}`
+  if (options?.limit !== undefined) {
+    sql += ` limit ${options.limit}`
+  }
   return query<T[]>(sql, conditions)
 }
 
@@ -45,7 +49,7 @@ export async function findOne<T extends Record<string, any>>(
   table: string,
   conditions?: Partial<T>
 ): Promise<T> {
-  return (await find(table, conditions))[0]
+  return (await find(table, conditions, { limit: 1 }))[0]
 }
 
 export async function findOneById<T extends { id?: number | string }>(table: string, id: number | string): Promise<T> {
