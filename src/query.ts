@@ -3,6 +3,10 @@ import { getPool } from './connect'
 import { createConditionStr } from './tools'
 import { emit } from './event'
 
+type PartialConditions<T> = {
+  [key in keyof T]?: T[key] | T[key][]
+}
+
 // Can not just set ...params: Parameters<typeof pool.query>.
 // Because `pool.query` is a overloading function.
 // https://github.com/microsoft/TypeScript/issues/26591
@@ -40,7 +44,7 @@ export function query<T = any>(...params: [string | mysql.Query | mysql.QueryOpt
 
 export async function find<T = any>(
   table: string,
-  conditions: Partial<T> = {},
+  conditions: PartialConditions<T> = {},
   options?: { limit?: number | string }
 ): Promise<T[]> {
   const where = createConditionStr(conditions)
@@ -53,7 +57,7 @@ export async function find<T = any>(
 
 export async function findOne<T extends Record<string, any>>(
   table: string,
-  conditions?: Partial<T>
+  conditions?: PartialConditions<T>
 ): Promise<T> {
   return (await find(table, conditions, { limit: 1 }))[0]
 }
@@ -63,7 +67,8 @@ export async function findOneById<T extends { id?: number | string }>(table: str
 }
 
 export async function findOneByQuery<T extends Record<string, any>>(...args: Parameters<typeof query>): Promise<T> {
-  return (await query<T[]>(...args))?.[0]
+  const rows = await query<T[]>(...args)
+  if (rows && Array.isArray(rows)) return rows[0]
 }
 
 export async function has(...args: Parameters<typeof findOne>): Promise<boolean> {
@@ -102,13 +107,13 @@ export async function insertAndFind<T extends { id?: number | string }>(
   }
   const sql = `insert into ${table} (${keys.map(k => `\`${k}\``).join(', ')}) values (${keys.map((k) => `:${k}`).join(', ')})`
   const result = await query<any>(sql, values)
-  if (result?.insertId) return findOneById(table, result.insertId)
+  return findOneById(table, result.insertId)
 }
 
 export async function update<T extends Record<string, any>>(
   table: string,
   updates: Partial<T>,
-  conditions: Partial<T>
+  conditions: PartialConditions<T>
 ): Promise<mysql.OkPacket> {
   const where = createConditionStr(conditions)
   if (!where) {
@@ -122,7 +127,7 @@ export async function update<T extends Record<string, any>>(
 export async function updateAndFind<T extends Record<string, any>>(
   table: string,
   updates: Partial<T>,
-  conditions: Partial<T>
+  conditions: PartialConditions<T>
 ): Promise<T> {
   await update(table, updates, conditions)
   return findOne(table, conditions)

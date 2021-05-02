@@ -32,15 +32,12 @@ export const emit = (type: MysqlKitEventData['type'], sql: string, startDate?: D
 
 export const on = (type: MysqlKitEventData['type'], handle: (data: MysqlKitEventData) => void) => {
   const pool = getPool()
-  if (!pool) return
   pool.on(names[type], handle)
   return pool.off.bind(names[type], handle)
 }
 
 export const once = (type: MysqlKitEventData['type'], handle: (data: MysqlKitEventData) => void) => {
-  const pool = getPool()
-  if (!pool) return
-  pool.once(names[type], handle)
+  getPool().once(names[type], handle)
 }
 
 export const off = (type: MysqlKitEventData['type'], handle: (...args: any[]) => void) => getPool().off(names[type], handle)

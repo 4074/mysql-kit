@@ -49,6 +49,23 @@ describe('Event', () => {
     await mk.query('show tables')
     expect(queryLog).toBeNull()
   })
+
+  test('error', async () => {
+    let queryEndLog: MysqlKitEventData
+    expect.assertions(2)
+
+    const handleQuery = (l) => { queryEndLog = l }
+    mk.once('queryEnd', handleQuery)
+
+    let err: Error
+    try {
+      await mk.query('show tables11')
+    } catch (error) {
+      expect(error).toBeInstanceOf(Error)
+      err = error
+    }
+    expect(queryEndLog.error).toBe(err)
+  })
 })
 
 afterAll(done => {

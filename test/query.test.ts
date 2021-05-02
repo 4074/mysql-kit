@@ -23,9 +23,18 @@ beforeAll(() => {
 })
 
 describe('mysql kit', () => {
-  test('Show tables', async () => {
+  test('query', async () => {
     const r = await mk.query('show tables')
     expect(Array.isArray(r)).toBe(true)
+  })
+
+  test('query using callback', (done) => {
+    expect.assertions(2)
+    mk.query('show tables', (err: Error, r: any) => {
+      expect(err).toBeNull()
+      expect(Array.isArray(r)).toBe(true)
+      done()
+    })
   })
 
   test('Create test table', async () => {
@@ -62,6 +71,17 @@ describe('mysql kit', () => {
     expect(r.affectedRows).toBe(2)
   })
 
+  test('insert just one', async () => {
+    const r = await mk.insert<Animal>(testTableName, {
+      type: 'cat',
+      name: 'Mew~',
+      age: 2,
+      status: 1
+    })
+
+    expect(r.affectedRows).toBe(1)
+  })
+
   test('insertAndFind', async () => {
     const source: Animal = {
       type: 'dog',
@@ -74,11 +94,37 @@ describe('mysql kit', () => {
     expect(isValuesEqual(source, r, ['type', 'name', 'age', 'status'])).toBe(true)
   })
 
+  test('insertAndFind with id', async () => {
+    const source: Animal = {
+      id: -1,
+      type: 'dog',
+      name: Math.random().toString().slice(-8),
+      age: 2,
+      status: 1
+    }
+    const r = await mk.insertAndFind(testTableName, source)
+
+    expect(isValuesEqual(source, r, ['type', 'name', 'age', 'status'])).toBe(true)
+  })
+
   test('find', async () => {
     const r = await mk.find<Animal>(testTableName, { type: 'dog' })
-    expect(r.length).toBe(1)
+    expect(r.length).toBe(2)
+    expect(r[0].type).toBe('dog')
+    expect(r[1].type).toBe('dog')
+  })
+
+  test('find without conditions', async () => {
+    const r = await mk.find<Animal>(testTableName)
+    expect(r.length).toBeGreaterThanOrEqual(4)
+  })
+
+  test('find with array', async () => {
+    const r = await mk.find<Animal>(testTableName, { type: ['dog'] })
+    expect(r.length).toBe(2)
     expect(r[0].type).toBe('dog')
   })
+
 
   test('findOne', async () => {
     const r = await mk.findOne(testTableName, { type: 'dog' })
@@ -96,6 +142,28 @@ describe('mysql kit', () => {
       { type: 'cat' }
     )
     expect(r.id).toBe(1)
+
+    const q = await mk.findOneByQuery(
+      `select * from ${testTableName} where type=:type`,
+      { type: 'xxx' }
+    )
+    expect(q).toBeUndefined()
+
+    const p = await mk.findOneByQuery(`drop table if exists ${testTableName}_xxxx`)
+    expect(p).toBeUndefined()
+  })
+
+  test('findOneByQuery no data', async () => {
+    const r = await mk.findOneByQuery(
+      `select * from ${testTableName} where type=:type`,
+      { type: 'xxx' }
+    )
+    expect(r).toBeUndefined()
+  })
+
+  test('findOneByQuery not array', async () => {
+    const r = await mk.findOneByQuery(`drop table if exists ${testTableName}_xxxx`)
+    expect(r).toBeUndefined()
   })
 
   test('has', async () => {
@@ -105,7 +173,17 @@ describe('mysql kit', () => {
 
   test('update', async () => {
     const r = await mk.update<Animal>(testTableName, { age: 99 }, { type: 'cat' })
-    expect(r.affectedRows).toBe(2)
+    const rows = await mk.find(testTableName)
+    let count = 0
+    for (const row of rows) {
+      if (row.type === 'cat') {
+        count += 1
+        expect(row.age).toBe(99)
+      } else {
+        expect(row.age).not.toBe(99)
+      }
+    }
+    expect(r.affectedRows).toBe(count)
   })
 
   test('update with empty conditions', async () => {
