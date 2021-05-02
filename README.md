@@ -3,6 +3,7 @@
 MySQL toolkit base on `mysql` package.
 
 - Promisify `query` method of `mysql`
+- Useing pool by default
 - Some common shorthand methodes
   - `find`
   - `findOne`
@@ -31,13 +32,19 @@ npm install -D @types/mysql
 Use
 
 ```typescript
-import connect, { query } from 'mysql-kit'
+import mysqlKit from 'mysql-kit'
 
 // Your mysql config
-const config = {}
-await connect(config)
+const config = {
+  host: 'localhost',
+  port: 3306,
+  user: 'root',
+  password: 'root',
+  database: '__mysql_kit_test__',
+}
+await mysqlKit.connect(config)
 
-query('show tables')
+await mysqlKit.query('show tables')
 ```
 
 ## Test Coverage
