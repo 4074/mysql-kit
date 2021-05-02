@@ -1,6 +1,7 @@
 import mysql from 'mysql'
 import { getPool } from './connect'
 import { createConditionStr } from './tools'
+import { emit } from './event'
 
 // Can not just set ...params: Parameters<typeof pool.query>.
 // Because `pool.query` is a overloading function.
@@ -16,7 +17,12 @@ export function query<T = any>(...params: [string | mysql.Query | mysql.QueryOpt
       return
     }
 
-    const callback = (error: Error, results: any) => error ? reject(error) : resolve(results)
+    const startDate = new Date()
+    let result: mysql.Query
+    const callback = (error: Error, results: any) => {
+      emit('queryEnd', result.sql, startDate, error)
+      return error ? reject(error) : resolve(results)
+    }
 
     if (typeof params[params.length - 1] === 'function') {
       const originalCallback = params.pop()
@@ -28,7 +34,7 @@ export function query<T = any>(...params: [string | mysql.Query | mysql.QueryOpt
       params.push(callback)
     }
 
-    pool.query(...(params as Parameters<typeof pool.query>))
+    result = pool.query(...(params as Parameters<typeof pool.query>))
   })
 }
 
@@ -68,12 +74,22 @@ export async function insert<T extends Record<string, any>>(
   table: string,
   source: T | T[]
 ): Promise<mysql.OkPacket> {
-  const values = Array.isArray(source) ? source : [source]
-  const keys = Object.keys(values[0])
-  const vs = values.map((item) => {
-    return `(${keys.map((k) => mysql.escape(item[k])).join(', ')})`
-  })
-  return query(`insert into ${table} (${keys.map(k => `\`${k}\``).join(', ')}) values ${vs.join(',')}`, values)
+  const rows = Array.isArray(source) ? source : [source]
+  const keys = Object.keys(rows[0])
+  let values = []
+  const keysStr = keys.map(k => `\`${k}\``).join(', ')
+  const placeholders = Array(rows.length).fill(
+    `(${Array(keys.length).fill('?').join(', ')})`
+  )
+
+  for (const row of rows) {
+    values = values.concat(keys.map(key => row[key]))
+  }
+
+  return query(
+    `insert into ${table} (${keysStr}) values ${placeholders.join(', ')}`,
+    values
+  )
 }
 
 export async function insertAndFind<T extends { id?: number | string }>(

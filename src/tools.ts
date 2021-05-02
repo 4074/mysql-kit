@@ -1,3 +1,5 @@
+import Replacer from './replacer'
+
 export const createConditionStr = (conditions: Record<string, any>) => {
   const wheres = Object.keys(conditions).map(
     (k) => Array.isArray(conditions[k]) ? `\`${k}\` in (:${k})` : `\`${k}\`=:${k}`
@@ -12,4 +14,12 @@ export const pickValues = <T, K extends keyof T>(source: T, keys: K[]) => {
     result[key] = source[key]
   }
   return result
+}
+
+export const replaceBatch = (source: string, replaces: [string | RegExp, any][]) => {
+  const replacer = new Replacer(source)
+  for (const [s, r] of replaces) {
+    replacer.add(s, r)
+  }
+  return replacer.produce()
 }

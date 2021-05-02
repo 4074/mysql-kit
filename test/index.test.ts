@@ -1,5 +1,6 @@
 import mk from '../src'
 import { pickValues } from '../src/tools'
+import config from './config'
 
 interface Animal {
   id?: number
@@ -15,14 +16,6 @@ const isValuesEqual = <T>(a: T, b: T, keys: (keyof T)[]) => {
     if (a[key] !== b[key]) return false
   }
   return true
-}
-
-const config = {
-  host: 'localhost',
-  port: 3306,
-  user: 'root',
-  password: 'root',
-  database: '__mysql_kit_test__'
 }
 
 beforeAll(() => {
@@ -56,7 +49,7 @@ describe('mysql kit', () => {
   test('insert', async () => {
     const r = await mk.insert<Animal>(testTableName, [{
       type: 'cat',
-      name: 'Tom',
+      name: 'Tom?',
       age: 2,
       status: 1
     }, {

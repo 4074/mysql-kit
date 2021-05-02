@@ -13,11 +13,16 @@ import {
 } from './query'
 import { pickValues } from './tools'
 
-export type { QueryEventData } from './connect'
+import { on, once, off } from './event'
+export type { MysqlKitEventData, names as eventNames } from './event'
+
 
 export default {
   connect,
   getPool,
+  on,
+  once,
+  off,
 
   query,
   find,
