@@ -52,7 +52,6 @@ await mysqlKit.query('show tables')
 | File        | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s |
 | ----------- | ------- | -------- | ------- | ------- | ----------------- |
 | All files   | 100     | 100      | 100     | 100     |
-| src         | 100     | 100      | 100     | 100     |
 | connect.ts  | 100     | 100      | 100     | 100     |
 | event.ts    | 100     | 100      | 100     | 100     |
 | format.ts   | 100     | 100      | 100     | 100     |
@@ -60,5 +59,3 @@ await mysqlKit.query('show tables')
 | query.ts    | 100     | 100      | 100     | 100     |
 | replacer.ts | 100     | 100      | 100     | 100     |
 | tools.ts    | 100     | 100      | 100     | 100     |
-| test        | 100     | 100      | 100     | 100     |
-| config.ts   | 100     | 100      | 100     | 100     |

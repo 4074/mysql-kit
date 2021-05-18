@@ -6,5 +6,6 @@ module.exports = {
   },
   testEnvironment: 'node',
   testTimeout: 20000,
-  collectCoverage: true
+  collectCoverage: true,
+  coveragePathIgnorePatterns: ['/node_modules/', '/test/']
 }
