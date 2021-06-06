@@ -1,5 +1,9 @@
 # MySQL-Kit
 
+[![npm version][npm-image]][npm-url]
+[![build status][travis-image]][travis-url]
+[![coverage][codecov-image]][codecov-url]
+
 MySQL toolkit base on `mysql` package.
 
 - Promisify `query` method of `mysql`
@@ -47,15 +51,9 @@ await mysqlKit.connect(config)
 await mysqlKit.query('show tables')
 ```
 
-## Test Coverage
-
-| File        | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s |
-| ----------- | ------- | -------- | ------- | ------- | ----------------- |
-| All files   | 100     | 100      | 100     | 100     |
-| connect.ts  | 100     | 100      | 100     | 100     |
-| event.ts    | 100     | 100      | 100     | 100     |
-| format.ts   | 100     | 100      | 100     | 100     |
-| index.ts    | 100     | 100      | 100     | 100     |
-| query.ts    | 100     | 100      | 100     | 100     |
-| replacer.ts | 100     | 100      | 100     | 100     |
-| tools.ts    | 100     | 100      | 100     | 100     |
+[npm-image]: https://img.shields.io/npm/v/mysql-kit?style=flat-square
+[npm-url]: https://www.npmjs.com/package/mysql-kit
+[travis-image]: https://img.shields.io/travis/com/4074/mysql-kit?style=flat-square
+[travis-url]: https://travis-ci.com/4074/mysql-kit
+[codecov-image]: https://img.shields.io/codecov/c/github/4074/mysql-kit.svg?style=flat-square
+[codecov-url]: https://app.codecov.io/gh/4074/mysql-kit?branch=main
