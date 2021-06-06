@@ -1,6 +1,6 @@
 {
   "name": "mysql-kit",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Mysql toolkit base on `mysql`",
   "main": "dist/index.js",
   "files": [
@@ -15,18 +15,18 @@
     "mysql": "^2"
   },
   "devDependencies": {
-    "@types/jest": "^26.0.22",
+    "@types/jest": "^26.0.23",
     "@types/mysql": "^2.15.18",
-    "@typescript-eslint/eslint-plugin": "^4.22.0",
-    "@typescript-eslint/parser": "^4.22.0",
-    "eslint": "^7.24.0",
-    "eslint-config-alloy": "^3.10.0",
-    "jest": "^26.6.3",
+    "@typescript-eslint/eslint-plugin": "^4.26.0",
+    "@typescript-eslint/parser": "^4.26.0",
+    "eslint": "^7.28.0",
+    "eslint-config-alloy": "^4.1.0",
+    "jest": "^27.0.4",
     "mysql": "^2.18.1",
-    "prettier": "^2.2.1",
-    "ts-jest": "^26.5.5",
-    "ts-node": "^9.1.1",
-    "typescript": "^4.2.4"
+    "prettier": "^2.3.1",
+    "ts-jest": "^27.0.2",
+    "ts-node": "^10.0.0",
+    "typescript": "^4.3.2"
   },
   "scripts": {
     "test": "jest",
